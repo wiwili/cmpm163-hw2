@@ -12,3 +12,4 @@ A lot of the time I was figuring out how the implemented class worked rather tha
 In the end, I moved the emitter's Y position up so that it was on top of the scene, had it emit down, then I applied a standard gravity of -9.8 to the Y velocity.
 I tried using the noise from the webgl-noise to adjust the turbulence but it ended up not working because I could not figure out how it worked, so I kept the default perlin noise png.
 Right now, I implemented the wind power and a direction to push the particles in a certain direction. Turbulence affects the pattern of the snowflakes as they fall.
+I reused the snowflake sprites from the class demo and applied them to the particles, it fits and they look quite nice.
