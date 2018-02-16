@@ -236,26 +236,30 @@
 		attribute vec3 color;
 		attribute float size;
 		attribute float lifeTime;
+		attribute float spriteNum;
 		
 		varying vec4 vColor;
 		varying float lifeLeft;
+		varying float vWhichSprite;
 		
 		void main() {
 			vColor = vec4( color, 1.0 );
 			vec3 newPosition;
 			vec3 v;
+			vWhichSprite = spriteNum;
+			
 			float timeElapsed = uTime - startTime;
 			lifeLeft = 1.0 - ( timeElapsed / lifeTime );
 			gl_PointSize = ( uScale * size ) * lifeLeft;
-			//float noisePow = cnoise(velocity)* windDirection*1000.0;
+			//float noisePow = cnoise(position);
 
-			v.x = ( velocity.x - 0.5 ) * 3.0;
-			v.y = ( velocity.y - 0.5 ) * 3.0 -  9.8 * timeElapsed * 0.1;
+			v.x = ( velocity.x - 0.5 ) * 3.0 + windPower*windDirection;
+			v.y = ( velocity.y - 0.5 ) * 3.0 -  (9.8 * timeElapsed * 0.1) - (windPower);
 			v.z = ( velocity.z - 0.5 ) * 3.0;
 			newPosition = positionStart + ( v * 10.0 ) * timeElapsed;
 			vec3 noise = texture2D( tNoise, vec2( newPosition.x * 0.015 + ( uTime * 0.05 ), newPosition.y * 0.02 + ( uTime * 0.015 ) ) ).rgb;
 			vec3 noiseVel = ( noise.rgb - 0.5 ) * 30.0;
-			vec3 displace = vec3(noiseVel.x * (turbulence * windPower * windDirection),noiseVel.y * (turbulence * windPower * windDirection), 1.0);
+			vec3 displace = vec3(noiseVel * (turbulence));
 			newPosition = mix( newPosition, newPosition + displace, ( timeElapsed / lifeTime ) );
 			if( v.y > 0. && v.y < .05 ) {
 				lifeLeft = 0.0;
@@ -284,7 +288,15 @@
 		
 		varying vec4 vColor;
 		varying float lifeLeft;
+		varying float vWhichSprite;
+		
 		uniform sampler2D tSprite;
+		uniform sampler2D tSprite0;
+		uniform sampler2D tSprite1;
+		uniform sampler2D tSprite2;
+		uniform sampler2D tSprite3;
+		uniform sampler2D tSprite4;
+
 		void main() {
 			float alpha = 0.;
 			if( lifeLeft > 0.995 ) {
@@ -292,7 +304,20 @@
 			} else {
 				alpha = lifeLeft * 0.75;
 			}
-			vec4 tex = texture2D( tSprite, gl_PointCoord );
+			//vec4 tex = texture2D( tSprite3, gl_PointCoord );
+			vec4 tex = texture2D(tSprite0, gl_PointCoord);
+				if (vWhichSprite == 0.0) {
+					tex = texture2D( tSprite0, gl_PointCoord );
+				} else if (vWhichSprite == 1.0) {
+					tex = texture2D( tSprite1, gl_PointCoord );
+				} else if (vWhichSprite == 2.0) {
+					tex = texture2D( tSprite2, gl_PointCoord );
+				} else if (vWhichSprite == 3.0) {
+					tex = texture2D( tSprite3, gl_PointCoord );
+				} else  {
+					tex = texture2D( tSprite4, gl_PointCoord );
+				}
+
 			gl_FragColor = vec4( vColor.rgb * tex.a, alpha * tex.a );
 		}
 	</script>
@@ -338,7 +363,7 @@
 
 			options = {
 				position: new THREE.Vector3(0,7,0),
-				positionRandomness: 15.0,
+				positionRandomness: 50.0,
 				velocity: new THREE.Vector3(0,0,0),
 				velocityRandomness: .5,
 				color: "#aebdcf",
@@ -346,13 +371,13 @@
 				windDirection:0.0,
 				windPower:1.0,
 				turbulence: 0.0,
-				lifetime: 3,
+				lifetime: 2,
 				size: 20,
 				sizeRandomness: 1
 			};
 
 			spawnerOptions = {
-				spawnRate: 15000,
+				spawnRate: 5000,
 				horizontalSpeed: 1.5,
 				verticalSpeed: 1.33,
 				timeScale: 1
@@ -371,7 +396,7 @@
 			gui.add( options, "colorRandomness", 0, 1 );
 			gui.add( options, "lifetime", .1, 10 );
 			gui.add( options, "turbulence", 0, 1 );
-			gui.add( options, "windPower", 1, 50).onChange(function(value){
+			gui.add( options, "windPower", 0,1).onChange(function(value){
 				particleSystem.particleShaderMat.uniforms.windPower.value = value;
 			});
 			gui.add( options, "windDirection", -1,1).onChange(function(value){

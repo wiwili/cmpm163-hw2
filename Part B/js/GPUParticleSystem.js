@@ -179,11 +179,25 @@ THREE.GPUParticleSystem = function ( options ) {
 	this.particleSpriteTex = this.PARTICLE_SPRITE_TEXTURE || textureLoader.load( 'particle2.png' );
 	this.particleSpriteTex.wrapS = this.particleSpriteTex.wrapT = THREE.RepeatWrapping;
 
+	var sprite0 = textureLoader.load( "snowflake1.png" );
+	sprite0.wrapS = sprite0.wrapT = THREE.RepeatWrapping;
+	var sprite1 = textureLoader.load( "snowflake2.png" );
+	var sprite2 = textureLoader.load( "snowflake3.png" );
+	var sprite3 = textureLoader.load( "snowflake4.png" );
+	var sprite4 = textureLoader.load( "snowflake5.png" );
+		
 	var uniforms = options.uniforms;
 	uniforms.uTime = {value: 0.0};
 	uniforms.uScale =  {value: 1.0};
 	uniforms.tNoise = {value: this.particleNoiseTex};
 	uniforms.tSprite = {value: this.particleSpriteTex};
+	uniforms.tSprite0 = {type:'t',value: sprite0};
+	uniforms.tSprite1 = {type:'t',value: sprite1};
+	uniforms.tSprite2 = {type:'t',value: sprite2};
+	uniforms.tSprite3 = {type:'t',value: sprite3};
+	uniforms.tSprite4 = {type:'t',value: sprite4};
+
+
 	
 	this.particleShaderMat = new THREE.ShaderMaterial( {
 		transparent: true,
@@ -277,6 +291,12 @@ THREE.GPUParticleContainer = function ( maxParticles, particleSystem ) {
 	// geometry
 
 	this.particleShaderGeo = new THREE.BufferGeometry();
+	
+	var spriteNums = new Float32Array(this.PARTICLE_COUNT);
+	
+	for (var i = 0; i < this.PARTICLE_COUNT; i++) {
+		spriteNums[i] = Math.floor(Math.random() * 5.0);
+	}
 
 	
 	this.particleShaderGeo.addAttribute( 'position', new THREE.BufferAttribute( new Float32Array( this.PARTICLE_COUNT * 3 ), 3 ).setDynamic( true ) );
@@ -287,6 +307,7 @@ THREE.GPUParticleContainer = function ( maxParticles, particleSystem ) {
 	this.particleShaderGeo.addAttribute( 'color', new THREE.BufferAttribute( new Float32Array( this.PARTICLE_COUNT * 3 ), 3 ).setDynamic( true ) );
 	this.particleShaderGeo.addAttribute( 'size', new THREE.BufferAttribute( new Float32Array( this.PARTICLE_COUNT ), 1 ).setDynamic( true ) );
 	this.particleShaderGeo.addAttribute( 'lifeTime', new THREE.BufferAttribute( new Float32Array( this.PARTICLE_COUNT ), 1 ).setDynamic( true ) );
+	this.particleShaderGeo.addAttribute( 'spriteNum', new THREE.BufferAttribute (spriteNums,1));
 	
 	// material
 
